@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CondoChatty
 
-## Getting Started
+An AI-powered chatbot that helps users understand the Canadian Condo Act through accurate, context-aware responses using RAG (Retrieval Augmented Generation) technology.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 🤖 AI-powered chat interface for asking questions about the Condo Act
+- 📚 Accurate responses with citations to specific sections
+- 🔍 Context-aware responses using RAG technology
+- 📝 Clear formatting with bullet points and sections
+- 🔗 References to related sections
+- 📖 Definitions for legal terms
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js 14 with App Router
+- TypeScript
+- TailwindCSS
+- Cohere for embeddings and chat
+- Pinecone for vector storage
+- LangChain for PDF processing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/condochatty.git
+   cd condochatty
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Copy the example environment file and fill in your API keys:
+   ```bash
+   cp .env.example .env
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Create a Pinecone index with 1536 dimensions (for Cohere embeddings).
 
-## Deploy on Vercel
+5. Place your Condo Act PDF in the `data` directory:
+   ```bash
+   mkdir data
+   # Copy your condo-act.pdf to data/condo-act.pdf
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+6. Process and index the PDF:
+   ```bash
+   npm run process-pdf
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+7. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Usage
+
+1. Open http://localhost:3000 in your browser
+2. Type your question about the Condo Act in the chat input
+3. Get accurate, context-aware responses with citations
+
+Example queries:
+- "What are the main responsibilities of a condo board?"
+- "What are the requirements for a condo reserve fund?"
+- "How are condo fees determined?"
+- "What does PART VI cover?"
+- "Explain Section 72.1"
+- "Explain Section 73(2)(b)"
+
+## Environment Variables
+
+- `COHERE_API_KEY`: Your Cohere API key
+- `PINECONE_API_KEY`: Your Pinecone API key
+- `PINECONE_ENVIRONMENT`: Your Pinecone environment
+- `PINECONE_INDEX_NAME`: Your Pinecone index name
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
