@@ -14,7 +14,6 @@
 
 # production
 /build
-/dist
 
 # misc
 .DS_Store
@@ -40,9 +39,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE
+# Project specific
+/data
 .vscode/
 .idea/
-
-# Data files
-/data/
+dist/

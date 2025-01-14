@@ -1,24 +1,53 @@
 # CondoChatty
 
-An AI-powered chatbot that helps users understand the Canadian Condo Act through accurate, context-aware responses using RAG (Retrieval Augmented Generation) technology.
+An AI-powered chatbot that helps users understand the Ontario Condominium Act through accurate, context-aware responses using RAG (Retrieval Augmented Generation) technology.
 
 ## Features
 
-- 🤖 AI-powered chat interface for asking questions about the Condo Act
-- 📚 Accurate responses with citations to specific sections
-- 🔍 Context-aware responses using RAG technology
-- 📝 Clear formatting with bullet points and sections
-- 🔗 References to related sections
-- 📖 Definitions for legal terms
+- 🤖 AI-powered chat interface for asking questions about the Ontario Condo Act
+- 📚 Accurate responses with citations to specific sections and subsections
+- 🔍 Context-aware responses using advanced RAG technology
+- 📝 Clear formatting with markdown support, bullet points, and sections
+- 🔗 Cross-references to related sections and parts
+- 📖 Automatic extraction of legal definitions and amendments
+- 🎯 Smart chunking and processing of PDF content
+- 🔄 Efficient vector search with deduplication and relevance scoring
+- 📊 Metadata extraction including parts, sections, subsections, and topics
+- 🛡️ Error handling and graceful fallbacks
+
+## Architecture
+
+### PDF Processing Pipeline
+1. **Document Loading**: Uses LangChain's PDFLoader for initial text extraction
+2. **Text Processing**: Implements recursive character splitting with context preservation
+3. **Metadata Extraction**: Identifies parts, sections, subsections, amendments, and related references
+4. **Chunking Strategy**: Uses overlapping windows for context preservation
+5. **Vector Storage**: Efficiently stores embeddings in Pinecone with metadata
+
+### Chat System
+1. **Query Processing**: Enhanced search queries with legal context
+2. **Vector Search**: Semantic search with score-based filtering and deduplication
+3. **Response Generation**: Context-aware responses using Cohere's chat model
+4. **Citation System**: Automatic section and subsection citations
+5. **Error Handling**: Graceful fallbacks for API failures and invalid queries
 
 ## Tech Stack
 
-- Next.js 14 with App Router
-- TypeScript
-- TailwindCSS
-- Cohere for embeddings and chat
-- Pinecone for vector storage
-- LangChain for PDF processing
+- **Frontend**:
+  - Next.js 14 with App Router
+  - React 18
+  - TypeScript
+  - TailwindCSS with plugins
+  - Shadcn UI components
+  - Radix UI primitives
+  - React Hook Form
+  - React Markdown
+
+- **Backend**:
+  - Next.js API routes
+  - LangChain for document processing
+  - Cohere for embeddings and chat
+  - Pinecone for vector storage
 
 ## Setup
 
@@ -38,20 +67,39 @@ An AI-powered chatbot that helps users understand the Canadian Condo Act through
    cp .env.example .env
    ```
 
-4. Create a Pinecone index with 1536 dimensions (for Cohere embeddings).
+4. Configure environment variables:
+   ```env
+   COHERE_API_KEY=your_cohere_api_key
+   PINECONE_API_KEY=your_pinecone_api_key
+   PINECONE_ENVIRONMENT=your_pinecone_environment
+   PINECONE_INDEX_NAME=your_index_name
+   PINECONE_HOST=your_pinecone_host
+   ```
 
-5. Place your Condo Act PDF in the `data` directory:
+5. Create a Pinecone index:
+   - Dimensions: 1024 (for Cohere embed-english-v3.0 model)
+   - Metric: Cosine similarity
+   - Pod type: Starter or higher based on your needs
+
+6. Place your Ontario Condo Act PDF:
    ```bash
-   mkdir data
+   mkdir -p data
    # Copy your condo-act.pdf to data/condo-act.pdf
    ```
 
-6. Process and index the PDF:
+7. Process and index the PDF:
    ```bash
-   npm run process-pdf
+   # Reset existing index (if needed)
+   npm run reset-index
+   
+   # Process and index the PDF
+   npm run index-pdf
+   
+   # Or use the combined reindex command
+   npm run reindex
    ```
 
-7. Start the development server:
+8. Start the development server:
    ```bash
    npm run dev
    ```
@@ -59,7 +107,7 @@ An AI-powered chatbot that helps users understand the Canadian Condo Act through
 ## Usage
 
 1. Open http://localhost:3000 in your browser
-2. Type your question about the Condo Act in the chat input
+2. Type your question about the Ontario Condo Act in the chat input
 3. Get accurate, context-aware responses with citations
 
 Example queries:
@@ -68,14 +116,21 @@ Example queries:
 - "How are condo fees determined?"
 - "What does PART VI cover?"
 - "Explain Section 72.1"
-- "Explain Section 73(2)(b)"
+- "What are the requirements in Section 73(2)(b)?"
+- "What amendments have been made to Section 17?"
+- "Define 'declarant' according to the Act"
 
-## Environment Variables
+## Development Scripts
 
-- `COHERE_API_KEY`: Your Cohere API key
-- `PINECONE_API_KEY`: Your Pinecone API key
-- `PINECONE_ENVIRONMENT`: Your Pinecone environment
-- `PINECONE_INDEX_NAME`: Your Pinecone index name
+- `npm run dev`: Start development server
+- `npm run build`: Build production version
+- `npm run start`: Start production server
+- `npm run lint`: Run ESLint
+- `npm run process-pdf`: Process PDF without indexing
+- `npm run create-index`: Create Pinecone index
+- `npm run reset-index`: Reset existing index
+- `npm run index-pdf`: Index processed PDF
+- `npm run reindex`: Combined reset and index command
 
 ## Contributing
 
