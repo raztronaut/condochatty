@@ -10,7 +10,7 @@ export function MessageContent({ content, className }: MessageContentProps) {
   return (
     <ReactMarkdown
       className={cn(
-        'prose prose-sm max-w-none',
+        'prose prose-sm max-w-none dark:prose-invert',
         'prose-headings:mb-2 prose-headings:mt-4 prose-h2:text-lg prose-h2:font-semibold',
         'prose-p:my-2 prose-p:leading-relaxed',
         'prose-li:my-0.5',
@@ -21,7 +21,7 @@ export function MessageContent({ content, className }: MessageContentProps) {
       )}
       components={{
         h2: ({ children }) => (
-          <h2 className="border-b pb-1 text-lg font-semibold">{children}</h2>
+          <h2 className="border-b border-gray-200 dark:border-gray-700 pb-1 text-lg font-semibold">{children}</h2>
         ),
         ul: ({ children }) => (
           <ul className="my-2 list-none space-y-2 pl-0">{children}</ul>
