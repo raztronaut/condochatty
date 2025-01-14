@@ -14,6 +14,9 @@ export interface SearchResult {
     section?: string;
     subsection?: string;
     title?: string;
+    part?: string;
+    partTitle?: string;
+    type?: string;
   };
 }
 

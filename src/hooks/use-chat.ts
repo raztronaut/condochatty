@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Context {
   text: string;
@@ -14,39 +14,12 @@ interface Message {
   error?: string;
 }
 
-const STORAGE_KEY = 'condochatty-messages';
-
 export function useChat() {
   console.log('useChat hook initializing');
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Load messages from localStorage after mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setMessages(parsed.map((msg: any) => ({
-            ...msg,
-            createdAt: new Date(msg.createdAt),
-          })));
-        } catch (e) {
-          console.error('Failed to parse stored messages:', e);
-        }
-      }
-    }
-  }, []);
-
-  // Save messages to localStorage when they change
-  useEffect(() => {
-    if (typeof window !== 'undefined' && messages.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    }
-  }, [messages]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) {
@@ -122,9 +95,6 @@ export function useChat() {
   const clearMessages = () => {
     setMessages([]);
     setError(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
   };
 
   const retry = async () => {

@@ -23,97 +23,94 @@ export class ChatService {
   // Convert our messages to Cohere's format
   private convertToCohereHistory(history: Message[]) {
     return history.map(msg => ({
-      role: msg.role === 'user' ? 'USER' : 'ASSISTANT',
+      role: msg.role === 'user' ? 'USER' : 'CHATBOT',
       message: msg.content
-    })) as Array<{ role: 'USER' | 'ASSISTANT'; message: string }>;
+    })) as { role: 'USER' | 'CHATBOT'; message: string }[];
   }
 
   async chat(message: string, history: Message[] = []): Promise<ChatResponse> {
     try {
-      console.log('ChatService: Starting chat with message:', message);
-      console.log('ChatService: History:', history);
-
-      // Get relevant documents
-      console.log('ChatService: Searching for relevant documents...');
-      const searchQuery = `${message} responsibilities duties requirements obligations powers authority board`;
+      // Get relevant documents with an enhanced search query
+      const searchQuery = `${message.trim()} corporation board directors property maintenance insurance budget financial`;
+      console.log('Search query:', searchQuery);
+      
       const relevantDocs = await this.vectorStore.search(
         searchQuery,
         15
       );
       
-      // Filter out very low-scoring results but keep more relevant ones
-      const filteredDocs = relevantDocs.filter(
-        doc => (doc.metadata?.score || 0) > 0.3
-      ).slice(0, 5);
+      console.log('Found docs:', relevantDocs.length);
+      
+      // Filter and sort results with a lower threshold
+      const filteredDocs = relevantDocs
+        .filter(doc => {
+          const score = doc.metadata?.score || 0;
+          const text = doc.pageContent.toLowerCase();
+          // Filter out condominium authority sections and ensure relevance
+          return score > 0.3 && 
+                 !text.includes('condominium authority') &&
+                 (text.includes('board') || 
+                  text.includes('corporation') ||
+                  text.includes('directors'));
+        })
+        .sort((a, b) => (b.metadata?.score || 0) - (a.metadata?.score || 0))
+        .slice(0, 5);
+
+      console.log('Filtered docs:', filteredDocs.length);
 
       if (!filteredDocs.length) {
-        console.log('ChatService: No relevant documents found');
         return {
           role: 'assistant',
-          content: "I apologize, but I couldn't find specific information about that in the Condo Act. Could you try rephrasing your question or being more specific about what aspect of condo board responsibilities you're interested in?",
+          content: "I couldn't find specific information about condo board responsibilities. Could you try asking about a specific aspect like maintenance, finances, or governance?",
           createdAt: new Date(),
         };
       }
 
-      // Format context for the chat
-      console.log('ChatService: Formatting context...');
+      // Format context without exposing raw scores
       const context = filteredDocs
-        .sort((a, b) => (b.metadata?.score || 0) - (a.metadata?.score || 0))
         .map((doc: Document) => {
-          const section = doc.metadata?.section || 'Unknown';
+          const section = doc.metadata?.section ? `Section ${doc.metadata.section}` : '';
           const subsection = doc.metadata?.subsection ? ` (${doc.metadata.subsection})` : '';
-          const title = doc.metadata?.title ? ` - ${doc.metadata.title}` : '';
-          const score = doc.metadata?.score ? ` [Relevance: ${Math.round(doc.metadata.score * 100)}%]` : '';
+          const title = doc.metadata?.title ? `: ${doc.metadata.title}` : '';
           
-          return `Section ${section}${subsection}${title}${score}:\n${doc.pageContent.trim()}`;
+          return `${section}${subsection}${title}\n${doc.pageContent.trim()}`;
         })
         .join('\n\n');
-      console.log('ChatService: Formatted context:', context);
 
-      console.log('ChatService: Getting chat history...');
-      const chatHistory = await this.getChatHistory(history);
-      console.log('ChatService: Chat history:', chatHistory);
+      console.log('Context:', context);
 
       // Generate response using Cohere
-      console.log('ChatService: Generating response with Cohere...');
       const response = await this.cohere.chat({
-        message,
+        message: "Based on the Ontario Condominium Act, what are the specific responsibilities and duties of the condominium board mentioned in these sections? Please organize them by category and cite the relevant sections.",
         preamble: `You are a knowledgeable assistant specializing in the Ontario Condominium Act. 
-        Provide clear, structured answers following these rules:
+Provide clear, factual answers about condominium board responsibilities based on the following context from the Act:
 
-        1. Start with a brief 1-2 sentence overview
-        2. List key responsibilities/requirements using bullet points
-        3. Each point must:
-           - Focus on one specific duty or power
-           - Include the exact section number in [brackets]
-           - Explain in plain, practical language
-           - Avoid legal jargon
-        4. Limit to 3-5 most important points
-        5. End with a note if there are additional responsibilities not covered
-        
-        When discussing board responsibilities:
-        - Focus on practical day-to-day duties
-        - Emphasize financial and operational responsibilities
-        - Highlight reporting requirements
-        - Include oversight and management duties
-        
-        Current context from the Condo Act:
-        ${context}`,
+${context}
+
+Format your response as follows:
+1. Start with "## [Category Name]:" for each major category (e.g., ## Financial Responsibilities:)
+2. Under each category, use "- **[Responsibility Title]:**" followed by the description
+3. Include section references in parentheses at the end of each point
+4. Keep each point concise and clear
+5. Use proper spacing between categories and points
+6. Only include information from the provided context
+7. Focus on practical responsibilities`,
         chatHistory: this.convertToCohereHistory(history),
         temperature: 0.1,
-        maxTokens: 400,
-        connectors: [{ id: "web-search" }],
+        maxTokens: 1000,
+        connectors: [],
       });
-      console.log('ChatService: Cohere response:', response);
 
+      if (!response.text || response.text.length < 50) {
+        console.error('ChatService: Invalid response from Cohere:', response);
+        throw new Error('Invalid response from AI service');
+      }
+
+      // Return formatted response without exposing internal metadata
       return {
         role: 'assistant',
-        content: response.text,
+        content: response.text.trim(),
         createdAt: new Date(),
-        context: filteredDocs.map(doc => ({
-          text: doc.pageContent,
-          score: doc.metadata?.score || 0
-        }))
       };
     } catch (error) {
       console.error('ChatService: Error in chat:', error);

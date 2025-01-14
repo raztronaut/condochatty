@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Trash2, RotateCcw, Send } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { MessageContent } from './message-content';
 
 interface Context {
   text: string;
@@ -117,7 +118,7 @@ export function Chat() {
                   ? "bg-primary text-primary-foreground shadow"
                   : "bg-muted shadow-sm"
               )}>
-                {message.content}
+                <MessageContent content={message.content} />
               </div>
               
               {message.context && (

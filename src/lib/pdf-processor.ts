@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export class CondoActProcessor {
   private static readonly PART_PATTERN = /(?:PART|Part)\s+[IVX]+\s*[-–]?\s*([^\n]+)?/g;
-  private static readonly SECTION_PATTERN = /(?:\d+\.?\s*(?:\(\d+\))?)\s*[-–]?\s*([^\n]+)?/g;
+  private static readonly SECTION_PATTERN = /(?:^|\n)(\d+\.?\s*(?:\(\d+\))?)\s*[-–]?\s*([^\n]+)?/g;
   private static readonly SUBSECTION_PATTERN = /\((\d+)\)(\([a-z]\))?/g;
   private static readonly AMENDMENT_PATTERN = /\[Amendment:\s*([^\]]+)\]/g;
   private static readonly NOTE_PATTERN = /Note:\s*([^\n]+)/g;
@@ -96,16 +96,27 @@ export class CondoActProcessor {
   }
 
   private static cleanPageText(text: string): string {
-    // Remove headers and footers
+    // Remove headers, footers, and timestamps
+    text = text.replace(/\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}\s*[APM]{2}/g, '');
     text = text.replace(/Page \d+/g, '');
-    text = text.replace(/Condominium Act, \d+/g, '');
+    text = text.replace(/Condominium Act,\s*\d+/g, '');
+    text = text.replace(/S\.O\.\s*\d+,\s*c\.\s*\d+/g, '');
+    text = text.replace(/ontario\.ca/g, '');
+    text = text.replace(/https?:\/\/[^\s]+/g, '');
     
-    // Clean up whitespace and line breaks
+    // Remove special characters and normalize whitespace
+    text = text.replace(/[\x00-\x1F\x7F-\x9F]/g, ''); // Remove control characters
     text = text.replace(/\s+/g, ' ');
-    text = text.replace(/\n+/g, ' ');
-    text = text.trim();
     
-    return text;
+    // Clean up citations and references while preserving section numbers
+    text = text.replace(/\d{4},\s*c\.\s*\d+,\s*s\.\s*\d+(\s*\(\d+\))?/g, '');
+    text = text.replace(/Section Amendments[^\n]+/g, '');
+    
+    // Preserve important structural elements
+    text = text.replace(/\n{3,}/g, '\n\n'); // Normalize multiple newlines
+    text = text.replace(/([.!?])\s+/g, '$1\n'); // Add newlines after sentences
+    
+    return text.trim();
   }
 
   private static extractPageNumber(text: string): number {
@@ -154,9 +165,9 @@ export class CondoActProcessor {
       
       // Split by sections with overlap
       const sectionSplitter = new RecursiveCharacterTextSplitter({
-        separators: ["Section"],
+        separators: ["\n\n", "\n", ". "],
         chunkSize: 1000,
-        chunkOverlap: 100,
+        chunkOverlap: 200,
       });
 
       console.log('Splitting part into sections...');

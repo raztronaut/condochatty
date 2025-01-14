@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "process-pdf": "NODE_OPTIONS='--loader ts-node/esm' ts-node --project scripts/tsconfig.json scripts/process-pdf.ts",
-    "create-index": "NODE_OPTIONS='--loader ts-node/esm' ts-node --project scripts/tsconfig.json scripts/create-index.ts"
+    "create-index": "NODE_OPTIONS='--loader ts-node/esm' ts-node --project scripts/tsconfig.json scripts/create-index.ts",
+    "reset-index": "tsx src/scripts/reset-index.ts",
+    "index-pdf": "tsx src/scripts/index-pdf.ts",
+    "reindex": "npm run reset-index && npm run index-pdf"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -26,6 +29,7 @@
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/pdfjs-dist": "^2.10.378",
     "cohere-ai": "^7.6.2",
     "dotenv": "^16.3.1",
@@ -38,7 +42,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.54.2",
-    "react-markdown": "^9.0.1",
+    "react-markdown": "^9.0.3",
     "ts-node": "^10.9.2",
     "zod": "^3.24.1"
   },

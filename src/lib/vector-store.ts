@@ -146,20 +146,42 @@ export class VectorStore {
   async query(query: string, topK: number = 5): Promise<SearchResult[]> {
     const [queryEmbedding] = await this.embeddings.embedDocuments([query]);
     
+    console.log('Querying Pinecone with topK:', topK * 2);
+    
     const results = await this.index.query({
       vector: queryEmbedding,
-      topK,
+      topK: topK * 2,
       includeMetadata: true,
     });
 
-    return results.matches.map((match: any) => ({
-      text: match.metadata?.text || '',
-      score: match.score || 0,
-      metadata: {
-        section: match.metadata?.section,
-        subsection: match.metadata?.subsection,
-        title: match.metadata?.title
+    console.log('Raw matches:', results.matches?.length || 0);
+
+    // Deduplicate results based on text content
+    const seenTexts = new Set<string>();
+    const uniqueResults: SearchResult[] = [];
+
+    for (const match of results.matches || []) {
+      const text = match.metadata?.text || '';
+      const normalizedText = text.trim().toLowerCase();
+      
+      if (!seenTexts.has(normalizedText) && match.score >= 0.3) { // Lower threshold
+        seenTexts.add(normalizedText);
+        uniqueResults.push({
+          text: text,
+          score: match.score || 0,
+          metadata: {
+            section: match.metadata?.section,
+            subsection: match.metadata?.subsection,
+            title: match.metadata?.title,
+            part: match.metadata?.part,
+            partTitle: match.metadata?.partTitle,
+            type: match.metadata?.type
+          }
+        });
       }
-    }));
+    }
+
+    console.log('Unique results:', uniqueResults.length);
+    return uniqueResults.slice(0, topK);
   }
 } 
