@@ -10,11 +10,13 @@ export function MessageContent({ content, className }: MessageContentProps) {
   return (
     <ReactMarkdown
       className={cn(
-        'prose prose-sm dark:prose-invert max-w-none',
+        'prose prose-sm max-w-none',
         'prose-headings:mb-2 prose-headings:mt-4 prose-h2:text-lg prose-h2:font-semibold',
         'prose-p:my-2 prose-p:leading-relaxed',
         'prose-li:my-0.5',
         'prose-strong:font-semibold',
+        'prose-p:text-inherit prose-headings:text-inherit prose-strong:text-inherit',
+        'prose-ul:text-inherit prose-li:text-inherit',
         className
       )}
       components={{
@@ -26,8 +28,8 @@ export function MessageContent({ content, className }: MessageContentProps) {
         ),
         li: ({ children }) => (
           <li className="flex items-start">
-            <span className="mr-2">•</span>
-            <span>{children}</span>
+            <span className="mr-2 text-inherit">•</span>
+            <span className="text-inherit">{children}</span>
           </li>
         ),
       }}
