@@ -61,7 +61,7 @@ export class ChatService {
       if (!filteredDocs.length) {
         return {
           role: 'assistant',
-          content: "I couldn't find specific information about condo board responsibilities. Could you try asking about a specific aspect like maintenance, finances, or governance?",
+          content: "I couldn't find specific information about that in the Condo Act. Could you try rephrasing your question or asking about a specific aspect like maintenance, finances, or governance?",
           createdAt: new Date(),
         };
       }
@@ -81,23 +81,27 @@ export class ChatService {
 
       // Generate response using Cohere
       const response = await this.cohere.chat({
-        message: "Based on the Ontario Condominium Act, what are the specific responsibilities and duties of the condominium board mentioned in these sections? Please organize them by category and cite the relevant sections.",
-        preamble: `You are a knowledgeable assistant specializing in the Ontario Condominium Act. 
-Provide clear, factual answers about condominium board responsibilities based on the following context from the Act:
+        message: message,
+        preamble: `You are a knowledgeable assistant specializing in the Ontario Condominium Act. Your role is to provide accurate, clear, and practical information based on the Act's provisions.
 
+Context from the Act:
 ${context}
 
-Format your response as follows:
-1. Start with "## [Category Name]:" for each major category (e.g., ## Financial Responsibilities:)
-2. Under each category, use "- **[Responsibility Title]:**" followed by the description
-3. Include section references in parentheses at the end of each point
-4. Keep each point concise and clear
-5. Use proper spacing between categories and points
-6. Only include information from the provided context
-7. Focus on practical responsibilities`,
+Guidelines for your response:
+1. Answer directly based on the user's question
+2. Only use information from the provided context
+3. Always cite specific sections when making statements (e.g., "According to Section 17(1)")
+4. Use clear, simple language while maintaining legal accuracy
+5. Organize information logically with headers (##) for different topics
+6. If relevant, explain practical implications
+7. If the context doesn't fully answer the question, acknowledge this
+8. Format lists and key points with bullet points (-)
+9. Highlight important terms in bold (**term**)
+
+Remember: Your goal is to help users understand their rights and obligations under the Condo Act.`,
         chatHistory: this.convertToCohereHistory(history),
-        temperature: 0.1,
-        maxTokens: 1000,
+        temperature: 0.2,  // Slightly increased for better natural language while maintaining accuracy
+        maxTokens: 1500,  // Increased to allow for more detailed responses
         connectors: [],
       });
 
